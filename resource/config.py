@@ -6,7 +6,7 @@ error: (-215:Assertion failed) !_src.empty() in function 'cv::cvtColor'
 # -*- coding: utf-8 -*-
 import os
 
-yys_list = ["Win32Window0", "阴阳师-网易游戏"]
+yys_list = ["Win32Window", "阴阳师-网易游戏"]
 resource_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./featuremap"))
 
 
@@ -120,11 +120,12 @@ class Invitation:
     _sub_dir = os.path.abspath(os.path.join(resource_dir, "Invitation"))
     _invitation = "invitation.bmp"    # 邀请叉勾
     x_click_Invitation = 120
-    y_click_Invitation = 40
+    y_click_Invitation = 220
     random_x = 25
     random_y = 25
-    invite_accept_hotkey = ['Ctrl', 'F1']
-    invite_refuse_hotkey = ['Ctrl', 'F2']
+    # 现在采用QT的快捷键方式，这里就先不管
+    # invite_accept_hotkey = ['Ctrl', 'F1']
+    # invite_refuse_hotkey = ['Ctrl', 'F2']
 
     def __init__(self):
         self._invitation = os.path.join(self._sub_dir, self._invitation)

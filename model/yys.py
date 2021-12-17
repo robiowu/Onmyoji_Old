@@ -153,18 +153,8 @@ class YysHelper(gamecase.MyGameCase, winhandle.Window):
                 return True
             else:
                 return False
-        for _ in range(0, config.back.func_loop_times):
-            # self.findpic_helper.get_window_image()
-            # 找到在战斗界面中的返回键
-            back_check_time = config.back.back_check_times
-            while back_check_time > 0:
-                self.findpic_helper.get_window_image()
-                if findback(config.back.story) or findback(config.back.boundary):
-                    # reset back_check_time的值，保证说这几次的checktime都是用来确定已经没有返回的button了，因为响应点击是要时间的
-                    back_check_time = config.back.back_check_times
-                else:
-                    back_check_time = back_check_time - 1
 
+        def click_return():
             # 找到弹出的返回窗口的确认键
             confirm_check_time = config.back.confirm_check_times
             sub_image = config.back.confirm
@@ -182,6 +172,19 @@ class YysHelper(gamecase.MyGameCase, winhandle.Window):
                     confirm_check_time = config.back.confirm_check_times
                 else:
                     confirm_check_time = confirm_check_time - 1
+
+        for _ in range(0, config.back.func_loop_times):
+            # self.findpic_helper.get_window_image()
+            # 找到在战斗界面中的返回键
+            back_check_time = config.back.back_check_times
+            while back_check_time > 0:
+                self.findpic_helper.get_window_image()
+                if findback(config.back.story) or findback(config.back.boundary):
+                    # reset back_check_time的值，保证说这几次的checktime都是用来确定已经没有返回的button了，因为响应点击是要时间的
+                    back_check_time = config.back.back_check_times
+                    click_return()
+                else:
+                    back_check_time = back_check_time - 1
 
     def blink_border(self):
         self.highLight()

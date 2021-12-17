@@ -159,14 +159,19 @@ class Ui_MainWindow(object):
         self.auto_yeyuanhuo.setChecked(False)
         self.auto_yeyuanhuo.setTristate(False)
         self.auto_yeyuanhuo.setObjectName("auto_yeyuanhuo")
+
         self.back_button = QtWidgets.QPushButton(self.widget)
-        self.back_button.setEnabled(False)
+        self.back_button.setEnabled(True)
         self.back_button.setGeometry(QtCore.QRect(40, 30, 1, 1))
         self.back_button.setObjectName("back_button")
+        self.back_button.setShortcut("Ctrl+F2")
+
         self.go_button = QtWidgets.QPushButton(self.widget)
-        self.go_button.setEnabled(False)
+        self.go_button.setEnabled(True)
         self.go_button.setGeometry(QtCore.QRect(40, 30, 1, 1))
         self.go_button.setObjectName("go_button")
+        self.go_button.setShortcut("Ctrl+F1")
+
         self.verticalLayout_2.addWidget(self.widget)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
         self.horizontalLayout_2.setStretch(0, 1)
@@ -202,7 +207,6 @@ class Ui_MainWindow(object):
         self.menuTools.addAction(self.action_thumbnail)
         self.menubar.addAction(self.menuSetting.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -227,10 +231,6 @@ class Ui_MainWindow(object):
         self.refresh_list_2.setText(_translate("MainWindow", "刷新"))
         self.is_autoRefuseGoldOffer.setText(_translate("MainWindow", "抢勾协"))
         self.auto_yeyuanhuo.setText(_translate("MainWindow", "队长业原火"))
-        self.back_button.setText(_translate("MainWindow", "PushButton"))
-        self.back_button.setShortcut(_translate("MainWindow", "Ctrl+F2"))
-        self.go_button.setText(_translate("MainWindow", "PushButton"))
-        self.go_button.setShortcut(_translate("MainWindow", "Ctrl+F1"))
         self.menuSetting.setTitle(_translate("MainWindow", "Setting"))
         self.menuTools.setTitle(_translate("MainWindow", "Tools"))
         self.action_property.setText(_translate("MainWindow", "属性"))

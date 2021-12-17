@@ -7,9 +7,10 @@ import resource.config as config
 from model.yys import YysHelper
 import threading
 import time
-from robiowu_ScriptEft import mylog as mylog
+import sys
+# from robiowu_ScriptEft import mylog as mylog
 # 全局注册快捷键有问题啊，现在还是不搞着先了
-from robiowu_ScriptEft.third_lib.pyhk3 import pyhk
+# from robiowu_ScriptEft.third_lib.pyhk3 import pyhk
 hotkey = False
 
 
@@ -68,6 +69,11 @@ class Player:
     _hotkey_refuse_eventId = None
     _cyclethread = None
     _stop_thread = False
+
+    _go_button_threadId = None
+    _back_button_threadId = None
+    _go_button_clicked = False
+    _back_button_clicked = False
     # endregion
 
     def __init__(self, ui_MainWindow: Ui_MainWindow):
@@ -79,8 +85,6 @@ class Player:
         """
         self._ui_instance = ui_MainWindow
         self._is_catch_gouyu_checkbox = self._ui_instance.is_autoRefuseGoldOffer
-        # create pyhk class instance
-        self._hotkey = pyhk.pyhk()
         return
 
     # region 各个checkbox的check值的getter和setter
@@ -134,7 +138,8 @@ class Player:
     def _signal_connect_init(self):
         self._refresh_list_button.clicked.connect(self.refresh_hwnd_combox_list)
         self._hwd_comboBox.currentTextChanged.connect(self.change_hwnd_combox_list)
-        self._is_catch_inout_checkbox.stateChanged.connect(self.change_catch_invite_accept)
+        self._ui_instance.go_button.clicked.connect(self.accept_invitation)
+        self._ui_instance.back_button.clicked.connect(self.back_return)
         return
 
     # region 各个控件的新号对应的函数功能
@@ -144,8 +149,8 @@ class Player:
         temp = YysMainViewModel.get_game_hwnd_list()
         temp.sort()
         temp_str = [str(x) for x in temp]
-        # temp_str.append("")
-        # temp_str.sort()
+        # 因为combox会默认展示第一个（即index = 0）的text，因此往最上面插入一个空字符串""用来停止线程
+        temp_str.insert(0, "")
         print(temp_str)
         self._hwd_comboBox.addItems(temp_str)
 
@@ -164,62 +169,25 @@ class Player:
                 self._stop_thread = False
             except Exception as err:
                 print("catch error in waiting thread stop :%s" % err)
-        try:
-            self._unregist_hotkey()
-        except Exception as err:
-            print("catch error in unregist hotkey :%s" % err)
-        if currentText == "":
-            return
         if self._yys_helper is not None:
             del self._yys_helper
+            self._yys_helper = None
+        if currentText == "":
+            return
         try:
             self._yys_helper = YysHelper(int(currentText))
-            self._yys_helper.blink_border()
+            # self._yys_helper.blink_border()
+            self._yys_helper.findpic_helper.save_image("zzx.bmp")
+            self._yys_helper.findpic_helper.save_image("zzx.jpg")
             print("change hwnd: %s" % currentText)
-            if self.is_catch_inout:
-                self._regist_hotkey()
             self._cyclethread = threading.Thread(target=Player.cycle_working, args=(self,))
             self._cyclethread.start()
             # self._yys_helper = YysHelper(int(self._hwd_comboBox.currentText()))
         except Exception as e:
             print(e)
 
-    def _regist_hotkey(self):
-        if not hotkey:
-            return
-        self._hotkey_accept_eventId = self._hotkey.addHotkey(config.invitation.invite_accept_hotkey,
-                                                             self._yys_helper.accept_invitation)
-        self._hotkey_refuse_eventId = self._hotkey.addHotkey(config.invitation.invite_refuse_hotkey,
-                                                             self._yys_helper.back_return)
-        self._hotkey.start()
-
-    def _unregist_hotkey(self):
-        if not hotkey:
-            return
-        if self._hotkey_accept_eventId is None:
-            # self._hotkey.end()
-            return
-        try:
-            self._hotkey.removeHotkey(id=self._hotkey_accept_eventId)
-            self._hotkey.removeHotkey(id=self._hotkey_refuse_eventId)
-            self._hotkey_accept_eventId = None
-            self._hotkey_refuse_eventId = None
-        except Exception as err:
-            print(err)
-        finally:
-            self._hotkey.end()
-
-    def change_catch_invite_accept(self):
-        if self._yys_helper is None:
-            return
-        if self.is_catch_inout:
-            self._regist_hotkey()
-        else:
-            self._unregist_hotkey()
-
     def cycle_working(self):
         while True:
-            time.sleep(2)
             if self.is_autoGouyu:
                 self._yys_helper.catch_Gouyu_refuse_GoldOffer()
             self._yys_helper.win_click()
@@ -235,7 +203,42 @@ class Player:
                 self._yys_helper.battle_yeyuanhuo()
             if self._stop_thread:
                 self._stop_thread = False
-                return
+                break
+
+    def accept_invitation(self):
+        """
+        响应接受邀请的逻辑
+        :return:
+        """
+        if self._go_button_clicked:
+            return
+        self._go_button_clicked = True
+        if self._go_button_threadId is not None:
+            print("等待上一次 %s 结束" % sys._getframe().f_code.co_name)
+            self._go_button_threadId.join()
+            self._go_button_threadId = None
+        if self.is_catch_inout and self._yys_helper is not None:
+            self._go_button_threadId = threading.Thread(target=YysHelper.accept_invitation, args=(self._yys_helper,))
+            self._go_button_threadId.start()
+        self._go_button_clicked = False
+        return
+
+    def back_return(self):
+        """
+        响应返回退出的逻辑
+        :return:
+        """
+        if self._back_button_clicked:
+            return
+        self._back_button_clicked = True
+        if self._back_button_threadId is not None:
+            print("等待上一次 %s 结束" % sys._getframe().f_code.co_name)
+            self._back_button_threadId.join()
+        if self.is_catch_inout and self._yys_helper is not None:
+            self._back_button_threadId = threading.Thread(target=YysHelper.back_return, args=(self._yys_helper,))
+            self._back_button_threadId.start()
+        self._back_button_clicked = False
+        return
 
     # endregion
 
